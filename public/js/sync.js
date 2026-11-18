@@ -4,7 +4,8 @@
    * Everyone who enters the same trip code shares one board. Changes are merged entry-by-entry (js/merge.js). */
 (function () {
   const NZ = window.NZ, S = NZ.store, M = window.FFMerge;
-  const Y = (NZ.sync = { status: "local", message: "", last: 0 });
+  // server: what the last good response said is on the board; saveError: why the last save didn't land (cleared when one does)
+  const Y = (NZ.sync = { status: "local", message: "", last: 0, server: null, saveError: "" });
   const CODE_KEY = "fern-fiord.code";
   const API = "/api/state";
   const online = /^https?:$/.test(location.protocol);
@@ -27,12 +28,21 @@
     let j = null; try { j = await r.json(); } catch (e) {}
     return { status: r.status, json: j };
   }
-  function handleFail(res) {
+  function handleFail(res, saving) {
     if (res.status === 409) { dirty = true; return; }   // server was busy merging someone else's save: just try again
     if (res.status === 401) return setStatus("badcode", "That trip code doesn't match.");
     if (res.status === 503) return setStatus("notconfigured", (res.json && res.json.message) || "Sync isn't set up on the server yet.");
     if (res.status === 404) return setStatus("local", "This host has no sync service (saved on this device only).");
-    return setStatus("offline", "Couldn't reach the server. Your changes are saved here and will sync when it's back.");
+    const why = "server said " + res.status + (res.json && res.json.error ? " (" + res.json.error + ")" : "");
+    if (saving) { Y.saveError = why; dirty = true; }
+    return setStatus(saving ? "unsaved" : "offline", "Couldn't save to the server (" + why + "). Your changes are kept on this device and will retry.");
+  }
+  // a pull can succeed while saves keep failing: only call it "synced" once this device's changes have landed
+  function goodResponse(json) {
+    const st = M.normalize(json.state), n = (m) => Object.values(st[m]).filter((e) => e.v != null).length;
+    Y.server = Object.assign({ people: n("people"), votes: n("votes"), notes: n("notes"), at: Date.now() }, json.info || {});
+    if (Y.saveError) setStatus("unsaved", "Your changes haven't reached the server yet (" + Y.saveError + "). Retrying.");
+    else setStatus("synced");
   }
   // adopt a merged state from the server; tell pages to re-render only if something actually changed
   function adopt(remote) {
@@ -50,7 +60,7 @@
       const res = await call("GET");
       if (res.status !== 200) return handleFail(res);
       const { merged } = adopt(res.json.state);
-      setStatus("synced");
+      goodResponse(res.json);
       if (changed(merged, res.json.state || {})) schedulePush(50);   // we hold newer local work the server doesn't have yet
     } catch (e) { setStatus("offline", "Couldn't reach the server."); }
     finally { inflight = false; settle(); if (dirty) schedulePush(50); }
@@ -62,18 +72,19 @@
     inflight = true; dirty = false; setStatus("syncing");
     try {
       const res = await call("PUT", { state: S.state });
-      if (res.status !== 200) return handleFail(res);
+      if (res.status !== 200) return handleFail(res, true);
+      Y.saveError = "";
       adopt(res.json.state);
-      setStatus("synced");
-    } catch (e) { setStatus("offline", "Couldn't reach the server."); dirty = true; }
-    finally { inflight = false; if (dirty && Y.status !== "offline") schedulePush(dirty && Y.status === "syncing" ? 400 : 50); }
+      goodResponse(res.json);
+    } catch (e) { Y.saveError = "no connection"; setStatus("offline", "Couldn't reach the server."); dirty = true; }
+    finally { inflight = false; if (dirty && Y.status !== "offline" && Y.status !== "unsaved") schedulePush(dirty && Y.status === "syncing" ? 400 : 50); }
   }
   function schedulePush(ms) { pending = true; clearTimeout(pushTimer); pushTimer = setTimeout(push, ms == null ? 600 : ms); }
 
   S.onSave = () => { if (online && code) schedulePush(); };
 
   /* ---------- header pill + code dialog ---------- */
-  const LABEL = { local: "Saved on this device", needcode: "Set up sync", syncing: "Syncing…", synced: "Synced", offline: "Offline · will retry", badcode: "Wrong trip code", notconfigured: "Sync not set up" };
+  const LABEL = { local: "Saved on this device", needcode: "Set up sync", syncing: "Syncing…", synced: "Synced", offline: "Offline · will retry", unsaved: "Not saved to server", badcode: "Wrong trip code", notconfigured: "Sync not set up" };
   Y.render = function () {
     const el = document.getElementById("sync-pill"); if (!el) return;
     el.dataset.state = Y.status; el.textContent = LABEL[Y.status] || Y.status;
@@ -81,6 +92,20 @@
     el.title = (Y.message || (Y.status === "synced" ? "Votes, notes and added activities are shared with everyone using this trip code." : "Click for sync options")) + t;
     el.hidden = false;
   };
+  // connection check: compare these lines across devices. Same site + database and the server counts match
+  // what you see, then you're sharing one board; a different database code means a different copy of the data
+  function check() {
+    const n = (m) => S.live(m).length, sv = Y.server, t = (ts) => new Date(ts).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+    const row = (k, v) => `<tr><th>${k}</th><td>${v}</td></tr>`;
+    return `<table class="sync-check"><caption>Connection check</caption>
+      ${row("Status", NZ.esc(LABEL[Y.status] || Y.status) + (Y.last ? " · last good sync " + t(Y.last) : ""))}
+      ${row("Site", NZ.esc(location.host))}
+      ${row("Database", sv ? `<code>${NZ.esc(sv.db || "?")}</code> · ${NZ.esc(sv.env || "?")}` : "not reached yet")}
+      ${row("This device", `${n("people")} people · ${n("votes")} votes · ${n("notes")} notes`)}
+      ${row("On the server", sv ? `${sv.people} people · ${sv.votes} votes · ${sv.notes} notes` : "—")}
+      ${Y.saveError || Y.status === "offline" || Y.status === "unsaved" ? row("Problem", NZ.esc(Y.message || Y.saveError)) : ""}</table>
+      <p class="sub">Every device should show the same site and database code. If the server has fewer votes than this device for more than a few seconds, this device's saves aren't getting through.</p>`;
+  }
   // `then` runs after the code is saved and the first sync succeeds, or when the dialog is closed without a code
   function dialog(then) {
     let dlg = document.getElementById("sync-dlg");
@@ -90,7 +115,7 @@
       : "Enter the shared trip code (the TRIP_CODE set in Vercel). Everyone who uses the same code sees the same votes, notes and added activities, live.";
     dlg.innerHTML = `<form method="dialog"><h3>Share with the group</h3><p class="sub">${NZ.esc(intro)}</p>
       ${online ? `<label class="fld">Trip code<input id="sync-code" type="password" autocomplete="off" value="${NZ.esc(code)}" placeholder="shared passphrase"></label>` : ""}
-      <p class="sub">${Y.status === "synced" ? "Status: synced" + (Y.last ? " at " + new Date(Y.last).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }) : "") : ""}</p>
+      ${online && code ? check() : ""}
       <div class="dlg-foot">${online && code ? `<button class="btn ghost" value="forget">Forget code on this device</button>` : ""}<button class="btn ghost" value="cancel">Close</button>${online ? `<button class="btn primary" value="save">${code ? "Save &amp; sync now" : "Start syncing"}</button>` : ""}</div></form>`;
     dlg.onclose = () => {
       if (dlg.returnValue === "save") {

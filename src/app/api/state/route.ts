@@ -20,6 +20,20 @@ const ROW_ID = 1;
 const MAX_ATTEMPTS = 8;
 const LIMITS = { people: 40, items: 600, notes: 4000, itins: 40, days: 2400 } as const;
 
+// which database and deployment answered, so two devices can check they're really sharing one board.
+// The database is identified by a short hash of its host + name (no credentials).
+function info() {
+  let where = "";
+  try {
+    const u = new URL(process.env.DATABASE_URL || "");
+    where = u.hostname.replace(/-pooler(?=\.)/, "") + u.pathname;
+  } catch {}
+  return {
+    db: crypto.createHash("sha256").update(where).digest("hex").slice(0, 6),
+    env: process.env.VERCEL_ENV || "local",
+  };
+}
+
 function json(status: number, body: unknown) {
   return NextResponse.json(body, { status, headers: { "Cache-Control": "no-store" } });
 }
@@ -52,7 +66,7 @@ export async function GET(req: NextRequest) {
   if (fail) return fail;
 
   const row = await prisma.tripState.findUnique({ where: { id: ROW_ID } });
-  return json(200, { state: row ? row.data : null, now: Date.now() });
+  return json(200, { state: row ? row.data : null, now: Date.now(), info: info() });
 }
 
 export async function PUT(req: NextRequest) {
@@ -96,7 +110,7 @@ export async function PUT(req: NextRequest) {
         },
         { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
       );
-      return json(200, { state: merged, now: Date.now() });
+      return json(200, { state: merged, now: Date.now(), info: info() });
     } catch (e) {
       if (e instanceof TooLargeError) return json(413, { error: "too_large" });
       if (isWriteConflict(e) && attempt < MAX_ATTEMPTS - 1) continue;

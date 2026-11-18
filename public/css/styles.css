@@ -69,8 +69,8 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .sync-pill::before { content: ""; position: absolute; left: 9px; top: 50%; width: 8px; height: 8px; margin-top: -4px; border-radius: 50%; background: var(--muted); }
 .sync-pill[data-state="synced"]::before { background: #2fa36b; }
 .sync-pill[data-state="syncing"]::before { background: var(--kowhai); animation: pulse 1s infinite; }
-.sync-pill[data-state="needcode"], .sync-pill[data-state="badcode"], .sync-pill[data-state="notconfigured"] { border-color: var(--rata); color: var(--rata-d); }
-.sync-pill[data-state="needcode"]::before, .sync-pill[data-state="badcode"]::before, .sync-pill[data-state="notconfigured"]::before { background: var(--rata); }
+.sync-pill[data-state="needcode"], .sync-pill[data-state="badcode"], .sync-pill[data-state="notconfigured"], .sync-pill[data-state="unsaved"] { border-color: var(--rata); color: var(--rata-d); }
+.sync-pill[data-state="needcode"]::before, .sync-pill[data-state="badcode"]::before, .sync-pill[data-state="notconfigured"]::before, .sync-pill[data-state="unsaved"]::before { background: var(--rata); }
 .sync-pill[data-state="offline"]::before { background: #a56d0a; }
 .sync-pill:hover { border-color: var(--bush); }
 @keyframes pulse { 50% { opacity: 0.3; } }
@@ -259,6 +259,11 @@ dialog h3 { font-size: 24px; font-weight: 500; } dialog .sub { color: var(--ink-
 .fld textarea { resize: vertical; }
 .two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .people { display: flex; flex-wrap: wrap; gap: 8px; }
+.sync-check { width: 100%; border-collapse: collapse; font-size: 13px; margin: 6px 0 4px; }
+.sync-check caption { text-align: left; font-weight: 700; padding-bottom: 4px; }
+.sync-check th { text-align: left; font-weight: 600; color: var(--ink-2); padding: 3px 10px 3px 0; white-space: nowrap; vertical-align: top; }
+.sync-check td { padding: 3px 0; overflow-wrap: anywhere; }
+.sync-check code { font: 600 13px ui-monospace, Menlo, monospace; background: var(--bush-ll); padding: 1px 5px; border-radius: 4px; }
 .who-sync { background: var(--bush-ll); border-radius: 10px; padding: 10px 12px; font-size: 14px; margin: 0 0 14px; }
 .person small { font-weight: 500; color: var(--muted); }
 .person { display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--line); background: #fff; border-radius: 999px; padding: 4px 14px 4px 4px; font-weight: 600; }
