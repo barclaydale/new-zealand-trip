@@ -97,11 +97,11 @@
   S.adopt = function (st) { S.state = M.normalize(st); try { localStorage.setItem(KEY, JSON.stringify(S.state)); } catch (e) {} };
   S.get = (map, key) => { const e = S.state[map][key]; return e ? e.v : null; };
   // timestamps always move forward, even if this device's clock is behind the last writer's
-  S.set = function (map, key, v) {
+  S.put = function (map, key, v) {
     const prev = S.state[map][key];
     S.state[map][key] = { t: Math.max(Date.now(), prev ? prev.t + 1 : 0), v: v == null ? null : v };
-    S.save();
   };
+  S.set = function (map, key, v) { S.put(map, key, v); S.save(); };
   S.live = (map) => Object.keys(S.state[map]).filter((k) => S.state[map][k].v != null).map((k) => [k, S.state[map][k].v]);
 
   /* ---------- people ---------- */
@@ -116,6 +116,25 @@
     const color = NZ.COLORS.find((c) => !used.includes(c)) || NZ.COLORS[NZ.people().length % NZ.COLORS.length];
     S.set("people", id, { name: name.trim().slice(0, 40), color });
     return id;
+  };
+  NZ.samePerson = (a, b) => !!(a && b && a.id !== b.id && a.name.trim().toLowerCase() === b.name.trim().toLowerCase());
+  // fold a duplicate person (e.g. the same name added separately on a second device) into another:
+  // their votes (where `to` hasn't voted), notes, added activities and drafts move over, then `from` is removed
+  NZ.mergePerson = function (from, to) {
+    let moved = 0;
+    S.live("votes").forEach(([k, v]) => {
+      const [item, pid] = k.split("|"); if (pid !== from) return;
+      if (S.get("votes", item + "|" + to) == null) { S.put("votes", item + "|" + to, v); moved++; }
+      S.put("votes", k, null);
+    });
+    ["notes", "items", "itins"].forEach((map) => S.live(map).forEach(([k, v]) => {
+      if (v.by !== from && v.editedBy !== from) return;
+      S.put(map, k, Object.assign({}, v, v.by === from ? { by: to } : {}, v.editedBy === from ? { editedBy: to } : {})); moved++;
+    }));
+    S.put("people", from, null);
+    if (NZ.meId() === from) NZ.setMe(to);
+    S.save();
+    return moved;
   };
   NZ.initials = (name) => String(name || "?").trim().split(/\s+/).map((w) => w[0]).join("").slice(0, 2).toUpperCase();
 

@@ -211,19 +211,34 @@
 
   // "who are you?" — each device remembers one person; votes and notes are signed with them
   UI.who = function (then) {
-    const dlg = dialog("who-dlg"), people = NZ.people(), me = NZ.meId();
+    const dlg = dialog("who-dlg"), people = NZ.people(), me = NZ.meId(), Y = NZ.sync;
+    const dupes = people.filter((p) => people.some((q) => NZ.samePerson(p, q))).length;
+    const needCode = Y && Y.status === "needcode";
     dlg.innerHTML = `<form method="dialog"><h3>Who's on this device?</h3><p class="sub">Votes and notes are signed with your name so the group can see who wants what. Pick yourself, or add your name if you're new.</p>
-      ${people.length ? `<div class="people">${people.map((p) => `<button type="button" class="person${p.id === me ? " on" : ""}" data-pid="${esc(p.id)}"><span class="av" style="background:${esc(p.color)}">${esc(NZ.initials(p.name))}</span>${esc(p.name)}</button>`).join("")}</div>` : ""}
+      ${needCode ? `<p class="who-sync">Already using this on another device? <button type="button" class="linkbtn" data-code>Enter the trip code first</button> so your name and votes show up here.</p>` : ""}
+      ${people.length ? `<div class="people">${people.map((p) => `<button type="button" class="person${p.id === me ? " on" : ""}" data-pid="${esc(p.id)}"><span class="av" style="background:${esc(p.color)}">${esc(NZ.initials(p.name))}</span>${esc(p.name)}${dupes && p.id === me ? " <small>(this device)</small>" : ""}</button>`).join("")}</div>` : ""}
+      ${dupes ? `<p class="sub">Two people share a name? If they're both you, pick the other one and this device's votes and notes will move over to it.</p>` : ""}
       <label class="fld">${people.length ? "Not listed? Add your name" : "Your name"}<input id="who-name" maxlength="40" autocomplete="given-name" placeholder="e.g. Sam"></label>
       <div class="dlg-foot"><button class="btn ghost" value="cancel">Close</button><button class="btn primary" value="add">Add me</button></div></form>`;
-    dlg.onclick = (e) => { const b = e.target.closest("[data-pid]"); if (!b) return; NZ.setMe(b.dataset.pid); dlg.close("picked"); };
+    dlg.onclick = (e) => {
+      if (e.target.closest("[data-code]")) { dlg.close("code"); return Y.dialog(() => UI.who(then)); }
+      const b = e.target.closest("[data-pid]"); if (!b) return;
+      dlg.pick = b.dataset.pid; dlg.close("picked");
+    };
     dlg.onclose = () => {
+      let pick = dlg.pick; dlg.pick = null;
       if (dlg.returnValue === "add") {
         const v = document.getElementById("who-name").value.trim(); if (!v) return;
-        const existing = NZ.people().find((p) => p.name.toLowerCase() === v.toLowerCase());
-        NZ.setMe(existing ? existing.id : NZ.addPerson(v));
+        const named = NZ.people().filter((p) => p.name.trim().toLowerCase() === v.toLowerCase());
+        const existing = named.find((p) => p.id !== me) || named[0];
+        pick = existing ? existing.id : NZ.addPerson(v);
       } else if (dlg.returnValue !== "picked") return;
-      UI.toast("Hi " + NZ.me().name + " 👋"); UI.changed(); if (then) then();
+      const cur = NZ.person(me), next = NZ.person(pick);
+      if (NZ.samePerson(cur, next) && confirm(`Merge the two "${next.name}"s? This device's votes and notes move over to the other one, and the duplicate is removed for everyone.`)) {
+        const n = NZ.mergePerson(me, pick);
+        UI.toast(`Merged: ${n} vote${n === 1 ? "" : "s"} and notes moved`);
+      } else { NZ.setMe(pick); UI.toast("Hi " + NZ.me().name + " 👋"); }
+      UI.changed(); if (then) then();
     };
     dlg.showModal();
     if (!people.length) document.getElementById("who-name").focus();
@@ -320,6 +335,14 @@
     UI.footer();
     // ask "who are you?" once per browser session, so votes are signed from the start
     let asked = false; try { asked = !!sessionStorage.getItem("ff-asked"); sessionStorage.setItem("ff-asked", "1"); } catch (e) {}
-    if (!NZ.me() && !asked && !/[?&]noprompt\b/.test(location.search)) setTimeout(() => { if (!NZ.me()) UI.who(); }, 400);
+    if (NZ.me() || asked || /[?&]noprompt\b/.test(location.search)) return;
+    // on a new device, get the trip code first so the people already on the board can be picked,
+    // otherwise wait for the first sync to finish (up to a few seconds) before asking
+    const Y = NZ.sync, ask = () => { if (!NZ.me()) UI.who(); };
+    setTimeout(() => {
+      if (NZ.me()) return;
+      if (Y && Y.status === "needcode") return Y.dialog(ask);
+      Promise.race([Y ? Y.ready : Promise.resolve(), new Promise((r) => setTimeout(r, 5000))]).then(ask);
+    }, 400);
   });
 })();

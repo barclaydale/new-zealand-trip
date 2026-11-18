@@ -9,6 +9,9 @@
   const API = "/api/state";
   const online = /^https?:$/.test(location.protocol);
   let code = "", pushTimer = null, inflight = false, dirty = false, pollTimer = null, pending = false;
+  // resolves once this page's first pull has finished (or straight away when there's nothing to pull),
+  // so the "who are you?" prompt can list the people already on the board
+  let settle; Y.ready = new Promise((r) => (settle = r));
 
   try { code = localStorage.getItem(CODE_KEY) || ""; } catch (e) {}
 
@@ -50,7 +53,7 @@
       setStatus("synced");
       if (changed(merged, res.json.state || {})) schedulePush(50);   // we hold newer local work the server doesn't have yet
     } catch (e) { setStatus("offline", "Couldn't reach the server."); }
-    finally { inflight = false; if (dirty) schedulePush(50); }
+    finally { inflight = false; settle(); if (dirty) schedulePush(50); }
   }
   async function push() {
     if (!online || !code) return;
@@ -78,7 +81,8 @@
     el.title = (Y.message || (Y.status === "synced" ? "Votes, notes and added activities are shared with everyone using this trip code." : "Click for sync options")) + t;
     el.hidden = false;
   };
-  function dialog() {
+  // `then` runs after the code is saved and the first sync succeeds, or when the dialog is closed without a code
+  function dialog(then) {
     let dlg = document.getElementById("sync-dlg");
     if (!dlg) { dlg = document.createElement("dialog"); dlg.id = "sync-dlg"; document.body.appendChild(dlg); }
     const intro = !online ? "Sync only works on the hosted site (Vercel). This page is running from a file, so everything is saved in this browser only."
@@ -93,14 +97,15 @@
         const v = (document.getElementById("sync-code") || {}).value || "";
         if (!v.trim()) return;
         code = v.trim(); try { localStorage.setItem(CODE_KEY, code); } catch (e) {}
-        setStatus("syncing"); pull(true).then(() => { if (Y.status === "synced") push(); }); startPolling();
+        setStatus("syncing"); pull(true).then(() => { if (Y.status === "synced") { push(); if (then) then(); } }); startPolling();
       } else if (dlg.returnValue === "forget") {
         code = ""; try { localStorage.removeItem(CODE_KEY); } catch (e) {} setStatus(online ? "needcode" : "local");
-      }
+      } else if (then && !code) then();
     };
     dlg.returnValue = ""; dlg.showModal();
     const inp = document.getElementById("sync-code"); if (inp) inp.focus();
   }
+  Y.dialog = dialog;
   document.addEventListener("click", (e) => { if (e.target.closest("#sync-pill")) dialog(); });
 
   /* ---------- lifecycle ---------- */
@@ -113,7 +118,7 @@
     try { fetch(API, { method: "PUT", keepalive: true, headers: { "x-trip-code": code, "content-type": "application/json" }, body: JSON.stringify({ state: S.state }) }); } catch (e) {}
   });
 
-  if (!online) setStatus("local", "Opened from a file: saved on this device only.");
-  else if (!code) setStatus("needcode", "Enter the trip code to share votes and notes with the group.");
+  if (!online) { setStatus("local", "Opened from a file: saved on this device only."); settle(); }
+  else if (!code) { setStatus("needcode", "Enter the trip code to share votes and notes with the group."); settle(); }
   else { setStatus("syncing"); pull(); startPolling(); }
 })();

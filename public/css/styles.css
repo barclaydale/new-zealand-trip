@@ -259,6 +259,8 @@ dialog h3 { font-size: 24px; font-weight: 500; } dialog .sub { color: var(--ink-
 .fld textarea { resize: vertical; }
 .two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .people { display: flex; flex-wrap: wrap; gap: 8px; }
+.who-sync { background: var(--bush-ll); border-radius: 10px; padding: 10px 12px; font-size: 14px; margin: 0 0 14px; }
+.person small { font-weight: 500; color: var(--muted); }
 .person { display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--line); background: #fff; border-radius: 999px; padding: 4px 14px 4px 4px; font-weight: 600; }
 .person:hover, .person.on { border-color: var(--bush); background: var(--bush-ll); }
 .notes { display: grid; gap: 10px; max-height: 40vh; overflow: auto; }
