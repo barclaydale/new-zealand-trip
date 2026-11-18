@@ -20,6 +20,12 @@
     chat: ic('<path d="M4 5h16v11H9l-5 4z"/>'),
     edit: ic('<path d="M4 20h4L19 9l-4-4L4 16zM13.5 6.5l4 4"/>'),
     user: ic('<circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/>'),
+    grip: ic('<circle cx="9" cy="6" r="1"/><circle cx="15" cy="6" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="9" cy="18" r="1"/><circle cx="15" cy="18" r="1"/>'),
+    bed: ic('<path d="M3 18V7M3 14h18v4M21 14v-2a3 3 0 0 0-3-3h-7v5"/><circle cx="7" cy="11" r="1.6"/>'),
+    car: ic('<path d="M5 16V11l2-5h10l2 5v5M5 16h14M5 16v2M19 16v2M3 11h18"/><circle cx="8" cy="13.5" r="1"/><circle cx="16" cy="13.5" r="1"/>'),
+    plane: ic('<path d="M10.5 13.5 3 11.5l1-1.6 7 .6 4-5.5c.6-.8 1.9-1 2.6-.3.6.6.5 1.7-.2 2.4L13 12l.6 7-1.6 1-2-7.5z"/>'),
+    ferry: ic('<path d="M3 17l2.2 3h13.6L21 17H3zM5 17l1-6h12l1 6M9 11V7h6v4"/>'),
+    print: ic('<path d="M7 9V3h10v6M7 17H4v-6h16v6h-3M7 14h10v7H7z"/>'),
     star: ic('<path d="M12 3.5l2.6 5.4 5.9.8-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.8z"/>'),
     sun: ic('<circle cx="12" cy="12" r="4"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/>'),
     fern: ic('<path d="M6 21C9 15 12 9 18 3"/><path d="M8.6 16.4c-2 .2-3.6-.5-4.6-2 1.9-.4 3.6-.2 5 .9M10.6 13.1c-1.8-.5-3-1.7-3.5-3.4 1.9.2 3.4 1 4.4 2.4M12.8 10.2c-1.4-.9-2.2-2.3-2.2-4 1.7.6 2.9 1.7 3.4 3.3M15 7.2c-1-1.1-1.4-2.5-1-4 1.4.8 2.2 2 2.4 3.6M10 17.6c1.5 1.4 3.2 1.9 5 1.5-1-1.6-2.5-2.5-4.3-2.6M12.2 14.5c1.8.8 3.5.8 5-.2-1.4-1.2-3.1-1.6-4.9-1.2M14.4 11.4c1.8.4 3.3 0 4.6-1.2-1.6-.9-3.3-1-4.9-.3"/>')
@@ -126,7 +132,7 @@
     const isl = NZ.island(), seg = [["S", "South Island"], ["N", "North Island"], ["all", "Both"]];
     const cur = new URLSearchParams(location.search).get("c");
     el.innerHTML = `<div class="wrap bar"><a class="brand" href="index.html" aria-label="Fern and Fiord home"><svg viewBox="0 0 40 40" width="34" height="34" aria-hidden="true"><circle cx="20" cy="20" r="19" fill="#1f4d39"/><path d="M5 30 L14 17 L19 23 L25 13 L35 30 Z" fill="#e7eef0"/><path d="M14 17 L17 21 L19 23 L21 19.5 L25 13 L27.5 17 L24 19 L21 22 L19 24 L16 21 Z" fill="#fff"/><path d="M4 30h32v6H4z" fill="#2e7a93"/><circle cx="29" cy="10" r="3.4" fill="#e8b630"/></svg><span>Fern <em>&amp;</em> Fiord</span></a>
-      <nav aria-label="Main">${link("index.html", "home", "Home")}${link("category.html?c=all", "explore", "Explore")}${link("picks.html", "picks", "Group picks", ' <span class="pill" id="nav-todo" hidden></span>')}<button type="button" class="btn sm coral" id="add-btn">${UI.icons.plus}<span>Add</span></button><button type="button" id="who-pill" class="who-pill"></button><button type="button" id="sync-pill" class="sync-pill" data-state="local" hidden></button></nav></div>
+      <nav aria-label="Main">${link("index.html", "home", "Home")}${link("category.html?c=all", "explore", "Explore")}${link("picks.html", "picks", "Group picks", ' <span class="pill" id="nav-todo" hidden></span>')}${link("itinerary.html", "itinerary", "Itinerary", ' <span class="pill money" id="nav-total" hidden></span>')}${link("map.html", "map", "Map")}<button type="button" class="btn sm coral" id="add-btn">${UI.icons.plus}<span>Add</span></button><button type="button" id="who-pill" class="who-pill"></button><button type="button" id="sync-pill" class="sync-pill" data-state="local" hidden></button></nav></div>
       <div class="subbar"><div class="wrap subbar-in"><div class="seg" role="group" aria-label="Which island">${seg.map(([v, l]) => `<button type="button" data-island="${v}" aria-pressed="${isl === v}">${l}</button>`).join("")}</div>
       <div class="catlinks">${NZ.CATS.map((c) => `<a href="category.html?c=${c.k}" class="catlink c-${c.k}" ${active === "explore" && cur === c.k ? 'aria-current="page"' : ""}>${esc(c.short)}</a>`).join("")}</div></div></div>`;
     UI.refreshNav();
@@ -137,7 +143,9 @@
     if (w) { const p = NZ.me(); w.innerHTML = p ? `<span class="av" style="background:${esc(p.color)}">${esc(NZ.initials(p.name))}</span>${esc(p.name)}` : `${UI.icons.user}<span>Who are you?</span>`; w.classList.toggle("unset", !p); }
     const t = document.getElementById("nav-todo");
     if (t) { const n = me ? NZ.all().filter((a) => NZ.onIsland(a) && !NZ.vote(a.id, me)).length : 0; t.textContent = n; t.hidden = !n; t.title = n + " not voted on yet"; }
-    document.querySelectorAll("[data-island]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.island === NZ.island())));
+    const tot = document.getElementById("nav-total");
+    if (tot && NZ.plan) { const v = NZ.plan.calc().totals.all; tot.textContent = NZ.nzd(v); tot.hidden = !v; tot.title = "Estimated total for the draft you're viewing"; }
+    document.querySelectorAll(".subbar [data-island]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.island === NZ.island())));
   };
   UI.footer = function () {
     const el = document.getElementById("site-footer"); if (!el) return;
@@ -177,7 +185,7 @@
     const notes = NZ.notesFor(a.id).length, by = a.custom ? NZ.person(a.by) : null;
     const reviews = NZ.reviewLinks(a);
     return `<article class="act c-${a.cats[0]}${a.custom ? " custom" : ""}" data-id="${esc(a.id)}">
-      <div class="act-top"><div class="badges">${UI.catChips(a)}${a.gem ? `<span class="chip gem" title="Off the beaten path">Hidden gem</span>` : ""}${NZ.hot(a) ? `<span class="chip hot" title="Sells out: book well ahead">Book early</span>` : ""}${a.custom ? `<span class="chip added">Added by ${esc(by ? by.name : "the group")}</span>` : ""}</div><span class="where">${UI.icons.pin}${esc(a.region || NZ.ISLANDS[a.island])}</span></div>
+      <div class="act-top"><div class="badges">${UI.catChips(a)}${a.gem ? `<span class="chip gem" title="Off the beaten path">Hidden gem</span>` : ""}${NZ.hot(a) ? `<span class="chip hot" title="Sells out: book well ahead">Book early</span>` : ""}${a.custom ? `<span class="chip added">Added by ${esc(by ? by.name : "the group")}</span>` : ""}${UI.placedBadge ? UI.placedBadge(a.id) : ""}</div><span class="where">${UI.icons.pin}${esc(a.region || NZ.ISLANDS[a.island])}</span></div>
       <h3>${esc(a.name)}</h3>
       ${a.base ? `<p class="loc">${esc(a.base)} · ${esc(NZ.ISLANDS[a.island])}</p>` : `<p class="loc">${esc(NZ.ISLANDS[a.island])}</p>`}
       ${a.desc ? `<p class="desc">${esc(a.desc)}</p>` : ""}
@@ -186,7 +194,7 @@
       ${UI.ratings(a)}
       <div class="links">${a.link ? `<a href="${esc(a.link.url)}" target="_blank" rel="noopener noreferrer">${esc(a.link.label)}${UI.icons.ext}</a>` : ""}${reviews.map((l) => `<a href="${esc(l.url)}" target="_blank" rel="noopener noreferrer">${esc(l.label)}${UI.icons.ext}</a>`).join("")}</div>
       <div class="act-foot"><div class="vote-wrap">${UI.votes(a)}</div>
-        <div class="foot-r"><button type="button" class="btn sm ghost" data-notes="${esc(a.id)}">${UI.icons.chat}<span>${notes ? notes + " note" + (notes > 1 ? "s" : "") : "Add note"}</span></button>${a.custom ? `<button type="button" class="btn sm ghost" data-edit="${esc(a.id)}">${UI.icons.edit}<span>Edit</span></button>` : ""}</div></div>
+        <div class="foot-r"><button type="button" class="btn sm ghost" data-notes="${esc(a.id)}">${UI.icons.chat}<span>${notes ? notes + " note" + (notes > 1 ? "s" : "") : "Add note"}</span></button>${a.custom ? `<button type="button" class="btn sm ghost" data-edit="${esc(a.id)}">${UI.icons.edit}<span>Edit</span></button>` : ""}<button type="button" class="btn sm add" data-add="${esc(a.id)}" title="Add to the itinerary">${UI.icons.plus}<span>Itinerary</span></button></div></div>
     </article>`;
   };
   UI.refreshCard = function (id) {

@@ -7,7 +7,7 @@ const root = path.join(__dirname, "..");
 const ctx = { window: {}, localStorage: { getItem: () => null, setItem() {} }, document: { dispatchEvent() {} }, CustomEvent: function () {}, console };
 ctx.window = ctx; ctx.self = ctx;
 vm.createContext(ctx);
-["js/merge.js", "js/core.js", "data/south.js", "data/north.js"].forEach((f) => vm.runInContext(fs.readFileSync(path.join(root, f), "utf8"), ctx, { filename: f }));
+["js/merge.js", "js/core.js", "data/south.js", "data/north.js", "js/geo.js"].forEach((f) => vm.runInContext(fs.readFileSync(path.join(root, f), "utf8"), ctx, { filename: f }));
 
 const NZ = ctx.NZ, problems = [], seen = new Set();
 NZ.order.forEach((id) => {
@@ -23,6 +23,17 @@ NZ.order.forEach((id) => {
   if (r.g != null && r.g !== 1) problems.push(`${where}: g must be 1 or omitted`);
   if (r.u && !/^(u:https?:\/\/|w:)/.test(r.u)) problems.push(`${where}: bad link spec "${r.u}"`);
 });
+
+// map placement (js/geo.js): which activities fell back to their region's main town, or landed suspiciously far from it
+const loose = [], odd = [];
+NZ.order.forEach((id) => {
+  const a = NZ.curated[id], p = NZ.placeOf(a), home = NZ.BASES[NZ.REGION_BASE[a.region]];
+  if (!home) { problems.push(`${id}: no NZ.REGION_BASE for region "${a.region}"`); return; }
+  if (!p.exact) loose.push(a.name);
+  else if (NZ.km(p.c, home.c) > 250) odd.push(`${a.name} (${Math.round(NZ.km(p.c, home.c))} km from ${home.name})`);
+});
+if (loose.length) console.log(`  placed at region centre (no named place matched): ${loose.join("; ")}`);
+if (odd.length) console.log(`  placed far from its region (check the match): ${odd.join("; ")}`);
 
 const by = (k) => NZ.CATS.map((c) => `${c.short} ${NZ.order.filter((id) => NZ.curated[id].island === k && NZ.curated[id].cats.includes(c.k)).length}`).join(" · ");
 console.log(`${NZ.order.length} activities`);

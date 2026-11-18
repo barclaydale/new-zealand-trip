@@ -14,7 +14,7 @@ datasource db {
 }
 
 // There's no per-user data model here — the whole trip (people, votes, group-added
-// activities and notes) is one shared JSON document, edited by whoever knows the
+// activities, notes and itinerary drafts) is one shared JSON document, edited by whoever knows the
 // trip code. See src/lib/merge.ts for the shape of `data` and how concurrent edits
 // from several people are combined. Singleton table: exactly one row, id = 1.
 model TripState {

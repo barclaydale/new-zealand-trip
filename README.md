@@ -26,6 +26,8 @@ themes, the official site (or Wikipedia), and links to its Tripadvisor and Googl
 | `index.html` | What to know about the dates (Easter, clocks going back, weather, what's in season), category tiles, top must-dos, recently added by the group |
 | `category.html?c=nature` | One category (or `c=all` for everything), with search, region, price, time and must-do filters and sorting |
 | `picks.html` | Group board: every activity ranked by the group's votes, one column per person |
+| `itinerary.html` | Day-by-day planner (ported from the honeymoon site): pick where you sleep each night, drag activities onto days, and the drive / flight / Cook Strait ferry between bases appears with rough times and costs. Time meter per day, running NZ$ total for the group, Easter and clock-change flags on the right dates. Multiple named **drafts** so each person can build their own version |
+| `map.html` | Real map (Leaflet, free tiles) of every activity, coloured by category, with voting and "add to itinerary" in the popups. **Itinerary story** plays the draft you're viewing day by day: driving through each town, stopping at activities, going dark overnight |
 
 ## Working as a group
 
@@ -35,6 +37,22 @@ themes, the official site (or Wikipedia), and links to its Tripadvisor and Googl
 - **Notes**: Anyone can leave a note on any activity. People can delete their own notes.
 - **Add**: The **+ Add** button creates a new activity with the same fields and ratings as the built-in ones.
   Anyone can edit or delete group-added activities.
+
+## Itinerary & map
+
+- **Drafts**: anyone can start a draft ("Sam's version"), duplicate one, rename or delete. Which draft you're
+  viewing is remembered per device, so two people can each have a different one open. The default draft
+  ("Our trip") only gets saved once someone edits it, so two devices never create duplicates.
+- **Settings per draft**: dates, travellers, the airport you fly into and home from, international flights per
+  person, food allowance per person per day, rental car per day. Accommodation is a free-text name + NZ$/night
+  on each day (there's no hotel database).
+- **Travel between bases** (`public/js/geo.js`): a small road network of real distances between ~50 towns, so
+  routes go around the Southern Alps rather than through them, plus the Cook Strait and Stewart Island ferries
+  and domestic flights between the main airports. Long legs offer a Drive / Fly choice. Times are estimates
+  for planning, not a substitute for a maps app.
+- **Map placement**: activities don't store coordinates. `geo.js` matches each one's name and town against a
+  list of real named places (then its region's main town), with a small jitter so neighbours don't stack.
+  `npm run check-data` lists anything that couldn't be placed precisely.
 
 ## How it's put together
 
@@ -47,8 +65,10 @@ themes, the official site (or Wikipedia), and links to its Tripadvisor and Googl
 - **Storage**: one row in Postgres (`prisma/schema.prisma`, model `TripState`) holds the whole shared state as
   JSON. It's read, merged and written inside a serializable transaction, and retried if two saves race.
 - **Merge logic**: `src/lib/merge.ts` (server) and `public/js/merge.js` (browser) are twins of the same
-  conflict-free merge, so if you change the rules, change both. The state is four maps (`people`, `votes`,
-  `items`, `notes`). Every entry carries a timestamp, and the newer one wins key by key. Deleting writes a
+  conflict-free merge, so if you change the rules, change both. The state is six maps (`people`, `votes`,
+  `items`, `notes`, `itins`, `days`). Every entry carries a timestamp, and the newer one wins key by key.
+  Each itinerary day is its own entry, so two people editing different days of one draft never clobber each
+  other. Deleting writes a
   timestamped "tombstone", so a device that was offline can't resurrect something someone else removed.
 
 ## Deploy on Vercel (one-time setup)

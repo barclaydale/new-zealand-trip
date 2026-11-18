@@ -3,11 +3,14 @@
    The server side (src/app/api/state/route.ts) uses the TypeScript twin of this file, src/lib/merge.ts —
    the two must stay logically identical; if you change the rules here, change them there too.
 
-   State shape (v1): four maps, every entry is { t: timestamp, v: value | null }
+   State shape (v1): six maps, every entry is { t: timestamp, v: value | null }
      people: { "<personId>": { t, v: { name, color } } }
      votes:  { "<itemId>|<personId>": { t, v: "love" | "like" | "pass" } }
      items:  { "u-<id>": { t, v: { name, island, cats, region, … } } }       — activities the group added
      notes:  { "<noteId>": { t, v: { item, by, text, at } } }                — comments on any activity
+     itins:  { "<draftId>": { t, v: { name, start, len, travellers, … } } }   — itinerary drafts (settings only)
+     days:   { "<draftId>|<dayIndex>": { t, v: { base, items, stay, pref } } } — one entry per planned day
+   Days are separate entries so two people editing different days of the same draft never clobber each other.
    A null v is a tombstone (a cleared vote, deleted note or deleted activity), kept with its timestamp
    so a device that was offline doesn't bring the old value back when it reconnects.
 
@@ -17,7 +20,7 @@
   if (typeof module === "object" && module.exports) module.exports = factory();
   else root.FFMerge = factory();
 })(typeof self !== "undefined" ? self : this, function () {
-  const MAPS = ["people", "votes", "items", "notes"];
+  const MAPS = ["people", "votes", "items", "notes", "itins", "days"];
 
   // canonical JSON (sorted keys) so equal states always compare equal
   function canon(v) {
@@ -37,7 +40,7 @@
   }
   function normalize(s) {
     s = s && typeof s === "object" ? s : {};
-    return { v: 1, people: normMap(s.people), votes: normMap(s.votes), items: normMap(s.items), notes: normMap(s.notes) };
+    return { v: 1, people: normMap(s.people), votes: normMap(s.votes), items: normMap(s.items), notes: normMap(s.notes), itins: normMap(s.itins), days: normMap(s.days) };
   }
   // pick the newer of two entries; on a tie prefer more content, then a stable compare
   function pick(a, b) {
@@ -47,7 +50,7 @@
     return ca >= cb ? a : b;
   }
   function merge(x, y) {
-    const a = normalize(x), b = normalize(y), out = { v: 1, people: {}, votes: {}, items: {}, notes: {} };
+    const a = normalize(x), b = normalize(y), out = { v: 1, people: {}, votes: {}, items: {}, notes: {}, itins: {}, days: {} };
     MAPS.forEach((m) => {
       const keys = new Set([...Object.keys(a[m]), ...Object.keys(b[m])]);
       keys.forEach((k) => { const ea = a[m][k], eb = b[m][k]; out[m][k] = ea && eb ? pick(ea, eb) : ea || eb; });

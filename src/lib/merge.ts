@@ -5,11 +5,14 @@
    locally, so a slow network never clobbers work done in the meantime). The two files must
    stay logically identical — if you change the merge rules here, change them there too.
 
-   State shape (v1): four maps, every entry is { t: timestamp, v: value | null }
+   State shape (v1): six maps, every entry is { t: timestamp, v: value | null }
      people: { "<personId>": { t, v: { name, color } } }
      votes:  { "<itemId>|<personId>": { t, v: "love" | "like" | "pass" } }
      items:  { "u-<id>": { t, v: { name, island, cats, region, … } } }       — activities the group added
      notes:  { "<noteId>": { t, v: { item, by, text, at } } }                — comments on any activity
+     itins:  { "<draftId>": { t, v: { name, start, len, travellers, … } } }   — itinerary drafts (settings only)
+     days:   { "<draftId>|<dayIndex>": { t, v: { base, items, stay, pref } } } — one entry per planned day
+   Days are separate entries so two people editing different days of the same draft never clobber each other.
    A null v is a tombstone (a cleared vote, deleted note or deleted activity), kept with its timestamp
    so a device that was offline doesn't bring the old value back when it reconnects.
 
@@ -28,9 +31,11 @@ export interface TripStateData {
   votes: EntryMap;
   items: EntryMap;
   notes: EntryMap;
+  itins: EntryMap;
+  days: EntryMap;
 }
 
-export const MAPS = ["people", "votes", "items", "notes"] as const;
+export const MAPS = ["people", "votes", "items", "notes", "itins", "days"] as const;
 
 // canonical JSON (sorted keys) so equal states always compare equal
 export function canon(v: unknown): string {
@@ -57,7 +62,7 @@ function normMap(m: unknown): EntryMap {
 
 export function normalize(s: unknown): TripStateData {
   const src = s && typeof s === "object" ? (s as Record<string, unknown>) : {};
-  return { v: 1, people: normMap(src.people), votes: normMap(src.votes), items: normMap(src.items), notes: normMap(src.notes) };
+  return { v: 1, people: normMap(src.people), votes: normMap(src.votes), items: normMap(src.items), notes: normMap(src.notes), itins: normMap(src.itins), days: normMap(src.days) };
 }
 
 // pick the newer of two entries; on a tie prefer more content, then a stable compare
@@ -70,7 +75,7 @@ function pick(a: Entry, b: Entry): Entry {
 
 export function merge(x: unknown, y: unknown): TripStateData {
   const a = normalize(x), b = normalize(y);
-  const out: TripStateData = { v: 1, people: {}, votes: {}, items: {}, notes: {} };
+  const out: TripStateData = { v: 1, people: {}, votes: {}, items: {}, notes: {}, itins: {}, days: {} };
   MAPS.forEach((m) => {
     const keys = new Set([...Object.keys(a[m]), ...Object.keys(b[m])]);
     keys.forEach((k) => {

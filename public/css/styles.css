@@ -273,6 +273,20 @@ dialog h3 { font-size: 24px; font-weight: 500; } dialog .sub { color: var(--ink-
 #site-footer { background: var(--ink); color: rgba(255, 255, 255, 0.85); padding: 34px 0 40px; margin-top: 30px; }
 #site-footer .fine { font-size: 12.5px; opacity: 0.65; margin-top: 8px; max-width: 95ch; }
 
+/* ---------- itinerary bits used on every page: "On Day 3" badge, + Itinerary button, day picker ---------- */
+.pill.money { background: var(--kowhai); color: var(--ink); }
+.placed { display: inline-flex; align-items: center; gap: 3px; font: 700 11px var(--body); background: #dff5e9; color: #17703f; padding: 3px 9px; border-radius: 999px; border: 1px solid #b4e2c8; }
+.placed[hidden] { display: none !important; }
+.btn.add { background: var(--ink); color: #fff; border-color: var(--ink); }
+.btn.add:hover { background: var(--bush-d); border-color: var(--bush-d); color: #fff; }
+.dayrows { max-height: 46vh; overflow: auto; display: grid; gap: 6px; padding: 2px; }
+.dayrow { display: grid; grid-template-columns: 22px 1fr auto; gap: 8px; align-items: center; padding: 9px 12px; border: 1px solid var(--line); border-radius: 12px; cursor: pointer; }
+.dayrow:hover { border-color: var(--bush); background: var(--bush-ll); }
+.dayrow em { color: var(--muted); font-style: normal; font-size: 12.5px; margin-left: 4px; }
+.dayrow small { color: var(--ink-2); text-align: right; }
+.dayrow.far small { color: var(--rata-d); }
+.dayrow input { accent-color: var(--bush-d); }
+
 /* ---------- responsive ---------- */
 @media (max-width: 620px) {
   .site-header .bar { padding-block: 8px; }

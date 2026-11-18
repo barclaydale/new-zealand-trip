@@ -18,7 +18,7 @@ export const runtime = "nodejs";
 const MAX_BYTES = 1024 * 1024;
 const ROW_ID = 1;
 const MAX_ATTEMPTS = 8;
-const LIMITS = { people: 40, items: 600, notes: 4000 } as const;
+const LIMITS = { people: 40, items: 600, notes: 4000, itins: 40, days: 2400 } as const;
 
 function json(status: number, body: unknown) {
   return NextResponse.json(body, { status, headers: { "Cache-Control": "no-store" } });
