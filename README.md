@@ -76,7 +76,9 @@ themes, the official site (or Wikipedia), and links to its Tripadvisor and Googl
 ## Deploy on Vercel (one-time setup)
 
 1. **Push this repo to GitHub** and import it in Vercel: **Add New → Project →** select the repo. The framework
-   preset detects Next.js; leave the defaults.
+   preset should be Next.js (`vercel.json` pins it, in case Vercel chose "Other" when the repo was empty).
+   If `/api/state` returns 404 on the live site, it was deployed as plain static files: check
+   **Settings → Build and Deployment → Framework Preset** is Next.js with no Output Directory override.
 2. **Add a database.** Go to Project → **Storage** → **Create Database** → **Postgres** (Neon, via the Vercel
    Marketplace). The free plan is plenty. Then click **Connect to Project** on the database itself. This sets
    `DATABASE_URL` and `DATABASE_URL_UNPOOLED` for all environments.

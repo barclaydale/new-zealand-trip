@@ -32,7 +32,8 @@
     if (res.status === 409) { dirty = true; return; }   // server was busy merging someone else's save: just try again
     if (res.status === 401) return setStatus("badcode", "That trip code doesn't match.");
     if (res.status === 503) return setStatus("notconfigured", (res.json && res.json.message) || "Sync isn't set up on the server yet.");
-    if (res.status === 404) return setStatus("local", "This host has no sync service (saved on this device only).");
+    // on a hosted site a missing API means Vercel built it as plain static files (Framework Preset isn't Next.js)
+    if (res.status === 404) return setStatus("notconfigured", "This site has no sync server: /api/state is missing, so Vercel deployed it as static files. In Vercel, set Settings → Build and Deployment → Framework Preset to Next.js and redeploy. Until then, everything is saved on this device only.");
     const why = "server said " + res.status + (res.json && res.json.error ? " (" + res.json.error + ")" : "");
     if (saving) { Y.saveError = why; dirty = true; }
     return setStatus(saving ? "unsaved" : "offline", "Couldn't save to the server (" + why + "). Your changes are kept on this device and will retry.");
