@@ -10,7 +10,7 @@
     const items = NZ.all().filter(NZ.onIsland), isl = NZ.island();
     const where = isl === "all" ? "New Zealand" : NZ.ISLANDS[isl];
 
-    document.getElementById("hero-stats").innerHTML = [[items.length, "Things to do"], [items.filter((a) => a.m === 5).length, "Don't-miss"], [NZ.people().length, "In the group"], [NZ.custom().length, "Added by us"]]
+    document.getElementById("hero-stats").innerHTML = [[items.length, "Things to do"], [items.filter((a) => a.m === 5).length, "Don't-miss"], [items.filter((a) => a.gem).length, "Hidden gems"], [NZ.people().length, "In the group"], [NZ.custom().length, "Added by us"]]
       .map((x) => `<div><b>${x[0]}</b><span>${x[1]}</span></div>`).join("");
 
     document.getElementById("cats").innerHTML = NZ.CATS.map((c) => {
@@ -22,6 +22,9 @@
     document.getElementById("must-sub").textContent = `Highest must-do rating in ${where}, with group votes as the tie-breaker.`;
     const top = items.slice().sort(byMust).slice(0, 6);
     document.getElementById("must").innerHTML = top.length ? top.map(UI.card).join("") : UI.empty("Nothing here yet", "Switch islands above.");
+
+    const gems = items.filter((a) => a.gem).sort(byMust).slice(0, 6);
+    document.getElementById("gems").innerHTML = gems.length ? gems.map(UI.card).join("") : UI.empty("No hidden gems here", "Switch islands above.");
 
     const recent = NZ.custom().sort((a, b) => b.added - a.added).slice(0, 6);
     document.getElementById("recent").innerHTML = recent.length ? recent.map(UI.card).join("")

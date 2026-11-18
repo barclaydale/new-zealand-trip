@@ -177,7 +177,7 @@
     const notes = NZ.notesFor(a.id).length, by = a.custom ? NZ.person(a.by) : null;
     const reviews = NZ.reviewLinks(a);
     return `<article class="act c-${a.cats[0]}${a.custom ? " custom" : ""}" data-id="${esc(a.id)}">
-      <div class="act-top"><div class="badges">${UI.catChips(a)}${a.custom ? `<span class="chip added">Added by ${esc(by ? by.name : "the group")}</span>` : ""}</div><span class="where">${UI.icons.pin}${esc(a.region || NZ.ISLANDS[a.island])}</span></div>
+      <div class="act-top"><div class="badges">${UI.catChips(a)}${a.gem ? `<span class="chip gem" title="Off the beaten path">Hidden gem</span>` : ""}${NZ.hot(a) ? `<span class="chip hot" title="Sells out: book well ahead">Book early</span>` : ""}${a.custom ? `<span class="chip added">Added by ${esc(by ? by.name : "the group")}</span>` : ""}</div><span class="where">${UI.icons.pin}${esc(a.region || NZ.ISLANDS[a.island])}</span></div>
       <h3>${esc(a.name)}</h3>
       ${a.base ? `<p class="loc">${esc(a.base)} · ${esc(NZ.ISLANDS[a.island])}</p>` : `<p class="loc">${esc(NZ.ISLANDS[a.island])}</p>`}
       ${a.desc ? `<p class="desc">${esc(a.desc)}</p>` : ""}
@@ -262,6 +262,7 @@
         <label class="fld">Duration (hours)<input name="h" type="number" min="0.25" step="0.25" value="${esc(r.h || "")}" placeholder="e.g. 3"></label></div>
       <div class="two"><label class="fld">Availability in late Mar–early Apr<select name="av">${opt(0, NZ.AVAIL_LABEL, r.av)}</select></label>
         <label class="fld">Must do<select name="m">${opt(0, NZ.MUST_LABEL, r.m)}</select></label></div>
+      <label class="check"><input type="checkbox" name="g" ${r.g ? "checked" : ""}> Hidden gem (off the beaten path)</label>
       <label class="fld">Timing / booking notes<input name="an" maxlength="400" value="${esc(r.an || "")}" placeholder="e.g. Only runs until mid-April; book a few days ahead"></label>
       <label class="fld">What people say<input name="fb" maxlength="600" value="${esc(r.fb || "")}" placeholder="Reviews, a friend's take…"></label>
       <label class="fld">Link<input name="u" type="url" maxlength="400" value="${esc((r.u || "").replace(/^u:/, ""))}" placeholder="https://…"></label>
@@ -283,7 +284,7 @@
       const fd = new FormData(dlg.querySelector("form")), g = (k) => String(fd.get(k) || "").trim();
       if (!g("n")) return;
       const url = g("u");
-      const fields = { n: g("n"), island, c: cats.length ? cats : ["classics"], r: g("r"), b: g("b"), d: g("d"), nz: Number(g("nz")) || 0, h: Number(g("h")) || 1, av: Number(g("av")) || 3, m: Number(g("m")) || 3, an: g("an"), fb: g("fb"), u: /^https?:\/\//i.test(url) ? "u:" + url : "" };
+      const fields = { n: g("n"), island, c: cats.length ? cats : ["classics"], r: g("r"), b: g("b"), d: g("d"), nz: Number(g("nz")) || 0, h: Number(g("h")) || 1, av: Number(g("av")) || 3, m: Number(g("m")) || 3, an: g("an"), fb: g("fb"), g: fd.get("g") ? 1 : 0, u: /^https?:\/\//i.test(url) ? "u:" + url : "" };
       const save = () => { NZ.saveCustom(id || "u-" + NZ.uid(), fields); UI.toast(ex ? "Saved" : `Added "${fields.n}"`); UI.changed(); };
       if (needMe(save)) save();
     };

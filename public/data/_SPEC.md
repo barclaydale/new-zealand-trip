@@ -17,6 +17,7 @@
 | `hn` | Duration note |
 | `m` | **Must do**, 1–5: 5 don't miss · 4 highly recommended · 3 worth it if nearby · 2 nice extra · 1 only if keen |
 | `fb` | "What people say": a summary of common themes in traveller reviews, not a quote |
+| `g` | `1` = **hidden gem** (off the beaten path). Omit otherwise. "Book early" is automatic when `av` ≤ 2 |
 | `u` | Main link: `u:https://…` (official site) or `w:Search term` (Wikipedia). Tripadvisor and Google review links are added automatically |
 
 Activities the group adds through the site use the same fields, but they're stored in the shared database, not here.

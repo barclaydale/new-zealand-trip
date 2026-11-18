@@ -18,7 +18,7 @@
   NZ.ISLANDS = { S: "South Island", N: "North Island" };
   NZ.REGIONS = {
     S: ["Queenstown", "Wānaka", "Fiordland", "Aoraki / Mt Cook & Mackenzie", "Christchurch & Canterbury", "Akaroa", "Kaikōura", "Nelson & Abel Tasman", "Marlborough", "West Coast", "Dunedin & Otago", "Catlins & Southland", "Stewart Island"],
-    N: ["Auckland", "Northland & Bay of Islands", "Coromandel", "Waikato", "Rotorua", "Taupō & Tongariro", "Hawke's Bay", "Wellington"]
+    N: ["Auckland", "Northland & Bay of Islands", "Coromandel", "Waikato", "Rotorua", "Bay of Plenty", "Taupō & Tongariro", "Hawke's Bay", "Wellington"]
   };
   NZ.TRIP = "late March – early April 2027";
   NZ.USD = 0.58;     // rough NZD → USD rate for the "≈ US$" hints; change it here if the rate moves
@@ -33,6 +33,7 @@
   NZ.AVAIL_LABEL = { 1: "Very hard to get / off-season", 2: "Book weeks ahead", 3: "Book a week or so ahead", 4: "Book a few days ahead", 5: "Just turn up" };
   NZ.durLevel = (h) => (h <= 1 ? 1 : h <= 3 ? 2 : h <= 6 ? 3 : h <= 12 ? 4 : 5);
   NZ.DUR_LABEL = { 1: "Quick stop", 2: "A couple of hours", 3: "Half day", 4: "Full day", 5: "Overnight +" };
+  NZ.hot = (a) => a.av <= 2;   // sells out / needs booking well ahead
   NZ.MUST_LABEL = { 1: "Only if you're keen", 2: "Nice extra", 3: "Worth it if you're nearby", 4: "Highly recommended", 5: "Don't miss" };
 
   /* ---------- small helpers ---------- */
@@ -74,7 +75,7 @@
       id, island: island === "N" ? "N" : "S", name: String(o.n || "Untitled"), cats: cats.length ? cats : ["classics"],
       region: o.r || "", base: o.b || "", desc: o.d || "", nz: Math.max(0, Number(o.nz) || 0), pn: o.pn || "",
       av: Math.min(5, Math.max(1, Number(o.av) || 3)), an: o.an || "", h: Math.max(0.1, Number(o.h) || 1), hn: o.hn || "",
-      m: Math.min(5, Math.max(1, Number(o.m) || 3)), fb: o.fb || "", link: NZ.link(o.u), raw: o
+      m: Math.min(5, Math.max(1, Number(o.m) || 3)), fb: o.fb || "", gem: !!o.g, link: NZ.link(o.u), raw: o
     };
   };
   NZ.add = function (island, rows) {

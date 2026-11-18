@@ -20,6 +20,7 @@ NZ.order.forEach((id) => {
   if (!NZ.REGIONS[a.island].includes(a.region)) problems.push(`${where}: region "${a.region}" isn't in NZ.REGIONS.${a.island}`);
   [["av", r.av], ["m", r.m]].forEach(([k, v]) => { if (!(v >= 1 && v <= 5 && Number.isInteger(v))) problems.push(`${where}: ${k} must be an integer 1–5`); });
   if (!(r.h > 0)) problems.push(`${where}: h must be > 0`);
+  if (r.g != null && r.g !== 1) problems.push(`${where}: g must be 1 or omitted`);
   if (r.u && !/^(u:https?:\/\/|w:)/.test(r.u)) problems.push(`${where}: bad link spec "${r.u}"`);
 });
 

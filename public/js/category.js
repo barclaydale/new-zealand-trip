@@ -16,7 +16,7 @@
   document.querySelector(".search").innerHTML = document.querySelector(".search").innerHTML.replace("__SEARCH__", UI.icons.search);
 
   /* filters */
-  const F = { q: "", region: "", sort: "must", price: "any", dur: "any", must: "any", unvoted: false, hidepass: false, custom: false };
+  const F = { q: "", region: "", sort: "must", price: "any", dur: "any", must: "any", unvoted: false, hidepass: false, custom: false, gem: false, hot: false };
   const PRICE = [["any", "Any"], ["0", "Free"], ["1", "≤ $"], ["2", "≤ $$"], ["3", "≤ $$$"]];
   const DUR = [["any", "Any"], ["3", "≤ 3 h"], ["6", "Half day"], ["12", "Full day"], ["99", "Overnight+"]];
   const DUR_RANGE = { 3: [0, 3], 6: [3, 6], 12: [6, 12], 99: [12, Infinity] };   // hours, (lo, hi]
@@ -37,10 +37,10 @@
   regionSel.onchange = () => { F.region = regionSel.value; render(); };
   document.getElementById("sort").onchange = (e) => { F.sort = e.target.value; render(); };
   let qT; document.getElementById("q").addEventListener("input", (e) => { clearTimeout(qT); qT = setTimeout(() => { F.q = e.target.value.trim().toLowerCase(); render(); }, 120); });
-  ["unvoted", "hidepass", "custom"].forEach((k) => (document.getElementById("f-" + k).onchange = (e) => { F[k] = e.target.checked; render(); }));
+  ["unvoted", "hidepass", "custom", "gem", "hot"].forEach((k) => (document.getElementById("f-" + k).onchange = (e) => { F[k] = e.target.checked; render(); }));
   document.getElementById("clear").onclick = () => {
-    Object.assign(F, { q: "", region: "", price: "any", dur: "any", must: "any", unvoted: false, hidepass: false, custom: false });
-    document.getElementById("q").value = ""; ["unvoted", "hidepass", "custom"].forEach((k) => (document.getElementById("f-" + k).checked = false));
+    Object.assign(F, { q: "", region: "", price: "any", dur: "any", must: "any", unvoted: false, hidepass: false, custom: false, gem: false, hot: false });
+    document.getElementById("q").value = ""; ["unvoted", "hidepass", "custom", "gem", "hot"].forEach((k) => (document.getElementById("f-" + k).checked = false));
     seg("f-price", PRICE, "price"); seg("f-dur", DUR, "dur"); seg("f-must", MUST, "must"); fillRegions(); render();
   };
 
@@ -62,6 +62,8 @@
       if (F.dur !== "any") { const [lo, hi] = DUR_RANGE[F.dur]; if (a.h <= lo || a.h > hi) return false; }
       if (F.must !== "any" && a.m < +F.must) return false;
       if (F.custom && !a.custom) return false;
+      if (F.gem && !a.gem) return false;
+      if (F.hot && !NZ.hot(a)) return false;
       if (me && F.unvoted && NZ.vote(a.id, me)) return false;
       if (me && F.hidepass && NZ.vote(a.id, me) === "pass") return false;
       if (F.q) { const hay = [a.name, a.region, a.base, a.desc, a.an, a.fb, a.cats.map((k) => NZ.CAT[k].label).join(" ")].join(" ").toLowerCase(); if (!F.q.split(/\s+/).every((w) => hay.includes(w))) return false; }
@@ -73,6 +75,7 @@
     document.getElementById("count").innerHTML = `<b>${items.length}</b> ${items.length === 1 ? "activity" : "activities"} in ${esc(isl === "all" ? "New Zealand" : NZ.ISLANDS[isl])}`;
     document.getElementById("grid").innerHTML = items.length ? items.map(UI.card).join("") : UI.empty("Nothing matches", "Try clearing a filter, or switch islands in the bar above.");
   }
+  if (location.hash === "#gems") { F.gem = true; document.getElementById("f-gem").checked = true; }
   fillRegions(); render();
   document.addEventListener("nz:data", render);
   document.addEventListener("nz:island", () => { fillRegions(); render(); });

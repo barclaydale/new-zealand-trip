@@ -93,6 +93,8 @@ button.chip[aria-pressed="true"] { background: var(--bush-d); border-color: var(
 button.chip small { opacity: 0.6; font-size: 11px; }
 .chip.cat { background: color-mix(in srgb, var(--cc) 13%, #fff); color: var(--cc); font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; padding: 3px 9px; }
 .chip.cat:hover { text-decoration: none; background: var(--cc); color: #fff; }
+.chip.gem { background: #e6f2ef; color: #22625d; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; padding: 3px 9px; }
+.chip.hot { background: var(--rata-l); color: var(--rata-d); font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; padding: 3px 9px; }
 .chip.added { background: var(--kowhai-l); color: #7a5410; font-weight: 600; font-size: 11.5px; padding: 3px 9px; }
 .seg { display: inline-flex; background: var(--sand-2); border-radius: 999px; padding: 3px; gap: 2px; flex-wrap: wrap; }
 .seg button { border: 0; background: transparent; padding: 6px 13px; border-radius: 999px; font-size: 13px; font-weight: 600; color: var(--ink-2); display: inline-flex; gap: 6px; align-items: center; }
