@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Group picks · Fern &amp; Fiord</title>
+<meta name="description" content="A shared New Zealand trip planner: every activity rated for price, availability, duration and must-do, with group voting and notes.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body data-page="picks">
+<header id="site-header" class="site-header"></header>
+<main class="wrap">
+  <div class="section-head">
+    <div><p class="eyebrow">Everyone's votes in one place</p><h2>Group picks</h2><p>Ranked by how keen the group is: love = 2, keen = 1, pass = −1. Click an activity to see its full card, vote or leave a note.</p></div>
+    <button class="btn" type="button" onclick="NZ.ui.who()">Switch person</button>
+  </div>
+  <div class="board-people" id="people"></div>
+  <section class="toolbar" aria-label="Filters">
+    <div class="tb-row">
+      <div class="tb-group"><span class="tb-label">Show</span><div class="seg" id="f-show"></div></div>
+      <select id="f-cat" aria-label="Category"></select>
+    </div>
+  </section>
+  <div class="board" id="board"></div>
+</main>
+<footer id="site-footer"></footer>
+<script src="js/boot.js"></script>
+<script src="js/picks.js"></script>
+</body>
+</html>

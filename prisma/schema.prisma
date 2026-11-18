@@ -1,0 +1,25 @@
+// Prisma schema: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// Var names match what Vercel's Postgres (Neon) storage integration sets when you
+// click "Connect to Project" on the database: DATABASE_URL (pooled, via pgbouncer)
+// and DATABASE_URL_UNPOOLED (direct connection, needed for migrations).
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DATABASE_URL_UNPOOLED")
+}
+
+// There's no per-user data model here — the whole trip (people, votes, group-added
+// activities and notes) is one shared JSON document, edited by whoever knows the
+// trip code. See src/lib/merge.ts for the shape of `data` and how concurrent edits
+// from several people are combined. Singleton table: exactly one row, id = 1.
+model TripState {
+  id        Int      @id @default(1)
+  data      Json
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+}

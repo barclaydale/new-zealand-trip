@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Explore · Fern &amp; Fiord</title>
+<meta name="description" content="A shared New Zealand trip planner: every activity rated for price, availability, duration and must-do, with group voting and notes.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body data-page="explore">
+<header id="site-header" class="site-header"></header>
+<section class="chero" id="chero"><div class="hero-art" id="chero-art"></div><div class="wrap"><a class="crumb" href="index.html">← Home</a><p class="eyebrow" id="c-eyebrow" style="color:var(--kowhai)"></p><h1 id="c-title"></h1><p class="tagline" id="c-tag"></p></div></section>
+<main class="wrap">
+  <section class="toolbar" aria-label="Filters">
+    <div class="tb-row">
+      <label class="search">__SEARCH__<input id="q" type="search" placeholder="Search: glacier, penguins, wine, Queenstown…" autocomplete="off"></label>
+      <select id="region" aria-label="Region"></select>
+      <select id="sort" aria-label="Sort">
+        <option value="must">Sort: Must-do first</option>
+        <option value="group">Sort: Group favourites</option>
+        <option value="price">Sort: Cheapest first</option>
+        <option value="dur">Sort: Shortest first</option>
+        <option value="avail">Sort: Easiest to book</option>
+        <option value="name">Sort: A–Z</option>
+      </select>
+    </div>
+    <div class="tb-row">
+      <div class="tb-group"><span class="tb-label">Price</span><div class="seg" id="f-price"></div></div>
+      <div class="tb-group"><span class="tb-label">Time</span><div class="seg" id="f-dur"></div></div>
+      <div class="tb-group"><span class="tb-label">Must do</span><div class="seg" id="f-must"></div></div>
+    </div>
+    <div class="tb-row">
+      <label class="check"><input type="checkbox" id="f-unvoted"> Only ones I haven't voted on</label>
+      <label class="check"><input type="checkbox" id="f-hidepass"> Hide ones I passed</label>
+      <label class="check"><input type="checkbox" id="f-custom"> Only group-added</label>
+      <button class="linkbtn" id="clear" type="button">Clear filters</button>
+    </div>
+  </section>
+  <div class="count-line"><span id="count"></span><button class="btn sm" type="button" onclick="NZ.ui.edit(null)">+ Add something we're missing</button></div>
+  <div class="acts" id="grid" aria-live="polite"></div>
+</main>
+<footer id="site-footer"></footer>
+<script src="js/boot.js"></script>
+<script src="js/category.js"></script>
+</body>
+</html>

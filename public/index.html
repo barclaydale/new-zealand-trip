@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fern &amp; Fiord · New Zealand Trip Planner</title>
+<meta name="description" content="A shared New Zealand trip planner: every activity rated for price, availability, duration and must-do, with group voting and notes.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body data-page="home">
+<header id="site-header" class="site-header"></header>
+
+<section class="hero">
+  <div class="hero-art" id="hero-art"></div>
+  <div class="wrap hero-inner">
+    <p class="eyebrow">Aotearoa New Zealand · Late March – early April 2027</p>
+    <h1>Plan the trip <em>together</em>, fiord by fiord.</h1>
+    <p class="lede">Everything worth doing, sorted by what kind of day it is: history, nature, only-in-NZ, the classics, culture and food. Each one is rated for price, availability on our dates, duration and how much of a must-do it is. Vote, leave notes for the group, and add anything we've missed.</p>
+    <div class="hero-stats" id="hero-stats"></div>
+  </div>
+</section>
+
+<main class="wrap">
+  <section class="dates" aria-labelledby="dates-h">
+    <div class="dates-top"><div><p class="eyebrow">Your dates</p><h2 id="dates-h">Late March – early April: what to know</h2><p>Early autumn. It's shoulder season, so crowds and rates are down from summer while nearly every tour still runs. The weather in the Southern Alps is often at its most settled. Two dates shape the trip: Easter and the end of daylight saving.</p></div></div>
+    <div class="facts">
+      <div class="fact" style="--fc:var(--rata)"><h5>Easter 2027</h5><p><b>Good Friday 26 Mar · Easter Sunday 28 Mar · Easter Monday 29 Mar.</b> On Good Friday and Easter Sunday most shops and supermarkets close (Queenstown and Wānaka allow Easter Sunday trading), and bars may only serve people who are dining. Cafés and tours mostly run. It's a busy domestic holiday weekend, so book beds and rental cars early.</p></div>
+      <div class="fact" style="--fc:var(--fiord)"><h5>Clocks go back</h5><p><b>Sunday 4 April, 3am → 2am.</b> Daylight saving ends. South Island sunsets move from roughly 7:30–8pm to about 6:30pm, so plan long hikes and sunset spots for the first week.</p></div>
+      <div class="fact" style="--fc:var(--kowhai)"><h5>Typical weather (high / low)</h5><table class="weather">
+        <tr><td>Queenstown &amp; Wānaka</td><td>≈ 64° / 43°F</td></tr>
+        <tr><td>Christchurch &amp; Kaikōura</td><td>≈ 66° / 47°F</td></tr>
+        <tr><td>Aoraki/Mt Cook &amp; Tekapo</td><td>≈ 61° / 39°F</td></tr>
+        <tr><td>Fiordland &amp; West Coast (wet!)</td><td>≈ 63° / 46°F</td></tr>
+        <tr><td>Auckland &amp; Rotorua</td><td>≈ 71° / 55°F</td></tr></table></div>
+      <div class="fact" style="--fc:var(--bush)"><h5>In season for you</h5><p>Grape harvest in Marlborough and Central Otago · Bluff oysters (season opens 1 March) · first autumn colour in Arrowtown (peaks mid-to-late April) · royal albatross chicks being fed · Super Rugby season · warm-ish sea in Abel Tasman.</p></div>
+      <div class="fact" style="--fc:var(--muted)"><h5>You'll miss</h5><p>Lupins (Nov–Dec) · whitebait season (Sep–Nov) · Hokitika Wild Foods Festival (usually early to mid March) · Bluff Oyster Festival (May) · peak autumn colours (mid-to-late April). NZ school holidays usually start mid-April, so you should mostly avoid them.</p></div>
+      <div class="fact" style="--fc:var(--c-onlynz)"><h5>Before you fly</h5><p>US passport holders need an <b>NZeTA</b> plus the <b>NZ$100 visitor levy</b>, paid together online or in the app. Te Papa now charges internationals NZ$35. A proposed fee for internationals at Milford, Aoraki, Tongariro and Cathedral Cove is planned for summer 2027/28 at the earliest. Bring sandfly repellent for Fiordland and the West Coast.</p></div>
+    </div>
+  </section>
+
+  <div class="section-head"><div><p class="eyebrow">Six ways in</p><h2>Browse by category</h2><p>Some activities belong to more than one category (Milford Sound is both a classic and nature), so they appear in each.</p></div></div>
+  <div class="cats" id="cats"></div>
+
+  <div class="section-head"><div><p class="eyebrow">If you only do a handful</p><h2>Top must-dos</h2><p id="must-sub">Highest must-do rating on the island you're viewing.</p></div><a class="btn" href="category.html?c=all">See everything →</a></div>
+  <div class="acts" id="must"></div>
+
+  <div class="section-head"><div><p class="eyebrow">From the group</p><h2>Recently added</h2><p>Things people have added. Anyone with the trip code can add an activity with the <b>+ Add</b> button.</p></div></div>
+  <div class="acts" id="recent"></div>
+</main>
+
+<footer id="site-footer"></footer>
+<script src="js/boot.js"></script>
+<script src="js/home.js"></script>
+</body>
+</html>

@@ -1,0 +1,30 @@
+{
+  "name": "new-zealand-trip",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Fern & Fiord: a shared New Zealand trip planner (static site served by Next.js, with a Postgres-backed API route for shared storage)",
+  "scripts": {
+    "dev": "next dev",
+    "build": "prisma generate && prisma migrate deploy && next build",
+    "start": "next start",
+    "lint": "eslint",
+    "postinstall": "prisma generate",
+    "check-data": "node public/data/_check.js"
+  },
+  "engines": { "node": ">=20" },
+  "dependencies": {
+    "@prisma/client": "^6.19.3",
+    "next": "16.2.10",
+    "prisma": "^6.19.3",
+    "react": "19.2.4",
+    "react-dom": "19.2.4"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.10",
+    "typescript": "^5"
+  }
+}
