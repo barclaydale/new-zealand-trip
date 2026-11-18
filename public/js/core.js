@@ -105,17 +105,39 @@
   S.live = (map) => Object.keys(S.state[map]).filter((k) => S.state[map][k].v != null).map((k) => [k, S.state[map][k].v]);
 
   /* ---------- people ---------- */
-  NZ.COLORS = ["#c8432f", "#2f6b4f", "#2e6d93", "#c48a12", "#7a4fa0", "#b0537a", "#3d8a85", "#7d5a35"];
-  NZ.people = () => S.live("people").map(([id, p]) => Object.assign({ id }, p)).sort((a, b) => a.name.localeCompare(b.name));
-  NZ.person = (id) => { const p = S.get("people", id); return p ? Object.assign({ id }, p) : null; };
+  NZ.COLORS = ["#c8432f", "#2f6b4f", "#2e6d93", "#c48a12", "#7a4fa0", "#b0537a", "#3d8a85", "#7d5a35",
+    "#d0662a", "#4b5fb0", "#6f8a2a", "#a3364f", "#1f7f9e", "#8a5cc2", "#5e6b73", "#b8860b"];
+  // past the palette: spread hues by the golden angle so each extra person still looks different
+  const extraColor = (i) => `hsl(${Math.round((i * 137.508 + 20) % 360)} 48% 40%)`;
+  // every person gets a colour no-one else has. Whoever joined first keeps theirs; a later clash
+  // (two devices adding people at the same moment) shows the next free colour instead
+  NZ.people = function () {
+    const list = S.live("people").map(([id, p]) => Object.assign({ id }, p, { joined: p.joined || S.state.people[id].t }));
+    const used = new Set();
+    list.sort((a, b) => a.joined - b.joined || (a.id < b.id ? -1 : 1)).forEach((p) => {
+      let c = p.color && !used.has(p.color) ? p.color : NZ.COLORS.find((x) => !used.has(x));
+      for (let i = 0; !c || used.has(c); i++) c = extraColor(i);
+      used.add((p.color = c));
+    });
+    return list.sort((a, b) => a.name.localeCompare(b.name));
+  };
+  NZ.person = (id) => (S.get("people", id) ? NZ.people().find((p) => p.id === id) : null);
   NZ.meId = () => { try { return localStorage.getItem(ME) || ""; } catch (e) { return ""; } };
   NZ.me = () => NZ.person(NZ.meId());
   NZ.setMe = (id) => { try { localStorage.setItem(ME, id); } catch (e) {} };
   NZ.addPerson = function (name) {
     const id = "p-" + NZ.uid(), used = NZ.people().map((p) => p.color);
-    const color = NZ.COLORS.find((c) => !used.includes(c)) || NZ.COLORS[NZ.people().length % NZ.COLORS.length];
-    S.set("people", id, { name: name.trim().slice(0, 40), color });
+    let color = NZ.COLORS.find((c) => !used.includes(c));
+    for (let i = 0; !color || used.includes(color); i++) color = extraColor(i);
+    S.set("people", id, { name: name.trim().slice(0, 40), color, joined: Date.now() });
     return id;
+  };
+  // remove someone for everyone: their person and votes go; notes and drafts they wrote stay (unsigned)
+  NZ.removePerson = function (id) {
+    S.live("votes").forEach(([k]) => { if (k.split("|")[1] === id) S.put("votes", k, null); });
+    S.put("people", id, null);
+    if (NZ.meId() === id) try { localStorage.removeItem(ME); } catch (e) {}
+    S.save();
   };
   NZ.samePerson = (a, b) => !!(a && b && a.id !== b.id && a.name.trim().toLowerCase() === b.name.trim().toLowerCase());
   // fold a duplicate person (e.g. the same name added separately on a second device) into another:

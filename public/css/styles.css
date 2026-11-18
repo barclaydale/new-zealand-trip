@@ -225,6 +225,8 @@ button.chip small { opacity: 0.6; font-size: 11px; }
 .pcard { background: #fff; border: 1px solid var(--line-2); box-shadow: var(--shadow); border-radius: 14px; padding: 10px 14px 10px 10px; display: flex; gap: 10px; align-items: center; font-size: 13px; }
 .pcard b { display: block; font-size: 14px; }
 .pcard small { color: var(--ink-2); }
+.pcard-x { margin-left: 4px; border: 0; background: none; color: var(--muted); font-size: 18px; line-height: 1; width: 26px; height: 26px; border-radius: 50%; }
+.pcard-x:hover { background: var(--rata-l); color: var(--rata-d); }
 .board { background: #fff; border: 1px solid var(--line-2); border-radius: var(--r); box-shadow: var(--shadow); overflow-x: auto; margin: 16px 0 56px; }
 .board table { width: 100%; border-collapse: collapse; font-size: 13.5px; min-width: 640px; }
 .board th { text-align: left; font: 700 10.5px var(--body); text-transform: uppercase; letter-spacing: 0.09em; color: var(--muted); padding: 12px 12px 8px; border-bottom: 1px solid var(--line); white-space: nowrap; }

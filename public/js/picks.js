@@ -18,7 +18,7 @@
 
     document.getElementById("people").innerHTML = people.length ? people.map((p) => {
       const n = pool.filter((a) => NZ.vote(a.id, p.id)).length, loves = pool.filter((a) => NZ.vote(a.id, p.id) === "love").length;
-      return `<div class="pcard"><span class="av" style="background:${esc(p.color)}">${esc(NZ.initials(p.name))}</span><div><b>${esc(p.name)}${p.id === me ? " (you)" : ""}</b><small>${n} of ${pool.length} voted · ${loves} loved</small></div></div>`;
+      return `<div class="pcard"><span class="av" style="background:${esc(p.color)}">${esc(NZ.initials(p.name))}</span><div><b>${esc(p.name)}${p.id === me ? " (you)" : ""}</b><small>${n} of ${pool.length} voted · ${loves} loved</small></div><button type="button" class="pcard-x" data-remove="${esc(p.id)}" title="Remove ${esc(p.name)}" aria-label="Remove ${esc(p.name)}">×</button></div>`;
     }).join("") : `<p class="sub">No-one has joined yet. <button class="linkbtn" type="button" onclick="NZ.ui.who()">Add your name</button> to start voting.</p>`;
 
     const rows = pool.filter((a) => {
@@ -42,6 +42,13 @@
 
   // open the full card in a dialog (vote / notes work there too)
   document.addEventListener("click", (e) => {
+    const x = e.target.closest("[data-remove]");
+    if (x) {
+      const p = NZ.person(x.dataset.remove); if (!p) return;
+      const n = NZ.store.live("votes").filter(([k]) => k.split("|")[1] === p.id).length;
+      if (!confirm(`Remove ${p.name}${p.id === NZ.meId() ? " (you)" : ""} for everyone? Their ${n} vote${n === 1 ? "" : "s"} will be deleted. Notes and drafts they wrote stay.`)) return;
+      NZ.removePerson(p.id); UI.toast(`Removed ${p.name}`); UI.changed(); return;
+    }
     const b = e.target.closest("[data-open]"); if (!b) return;
     const a = NZ.get(b.dataset.open); if (!a) return;
     let dlg = document.getElementById("card-dlg");
