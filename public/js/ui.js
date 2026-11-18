@@ -333,16 +333,16 @@
 
   document.addEventListener("DOMContentLoaded", () => {
     UI.footer();
-    // ask "who are you?" once per browser session, so votes are signed from the start
-    let asked = false; try { asked = !!sessionStorage.getItem("ff-asked"); sessionStorage.setItem("ff-asked", "1"); } catch (e) {}
-    if (NZ.me() || asked || /[?&]noprompt\b/.test(location.search)) return;
-    // on a new device, get the trip code first so the people already on the board can be picked,
-    // otherwise wait for the first sync to finish (up to a few seconds) before asking
+    // every load: ask for the trip code if this device hasn't got one, then (once the board has loaded, so
+    // the people already on it are listed) ask who's on this device. ?noprompt skips both
+    if (/[?&]noprompt\b/.test(location.search)) return;
     const Y = NZ.sync, ask = () => { if (!NZ.me()) UI.who(); };
-    setTimeout(() => {
-      if (NZ.me()) return;
-      if (Y && Y.status === "needcode") return Y.dialog(ask);
-      Promise.race([Y ? Y.ready : Promise.resolve(), new Promise((r) => setTimeout(r, 5000))]).then(ask);
-    }, 400);
+    if (Y && Y.status === "needcode") Y.dialog(ask);
+    else if (!NZ.me()) Promise.race([Y ? Y.ready : Promise.resolve(), new Promise((r) => setTimeout(r, 5000))]).then(ask);
+    // someone removed this device's person while the page was open: ask again
+    document.addEventListener("nz:data", () => {
+      const dlgOpen = document.querySelector("dialog[open]");
+      if (NZ.meId() && !NZ.me() && !dlgOpen) { NZ.setMe(""); UI.who(); }
+    });
   });
 })();

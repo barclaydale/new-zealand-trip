@@ -32,8 +32,9 @@ themes, the official site (or Wikipedia), and links to its Tripadvisor and Googl
 ## Working as a group
 
 - **Who are you?** Each device picks a person (or adds a new one). Votes and notes are signed with that name.
-  The choice is stored only on that device. On a new device the site asks for the trip code first, so you can
-  pick your existing name from the list. If the same name ends up added twice (both are you), pick the other
+  The choice is stored only on that device. Every page load asks for anything missing: the trip code first,
+  then (once the board has loaded) which person you are, so you can pick your existing name from the list.
+  Add `?noprompt` to a URL to skip both. If the same name ends up added twice (both are you), pick the other
   one in the "Who are you?" dialog and that device's votes, notes and drafts merge into it.
 - **People** each get their own colour, even if two devices add someone at the same moment. Remove someone
   with the × on their card on the Group picks page: their votes go for everyone, their notes and drafts stay.

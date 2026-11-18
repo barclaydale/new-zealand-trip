@@ -107,11 +107,13 @@
       ${Y.saveError || Y.status === "offline" || Y.status === "unsaved" ? row("Problem", NZ.esc(Y.message || Y.saveError)) : ""}</table>
       <p class="sub">Every device should show the same site and database code. If the server has fewer votes than this device for more than a few seconds, this device's saves aren't getting through.</p>`;
   }
-  // `then` runs after the code is saved and the first sync succeeds, or when the dialog is closed without a code
+  // `then` runs once the code is saved and the first sync has finished (a wrong code asks again), or when the
+  // dialog is closed without a code
   function dialog(then) {
     let dlg = document.getElementById("sync-dlg");
     if (!dlg) { dlg = document.createElement("dialog"); dlg.id = "sync-dlg"; document.body.appendChild(dlg); }
     const intro = !online ? "Sync only works on the hosted site (Vercel). This page is running from a file, so everything is saved in this browser only."
+      : Y.status === "badcode" ? "That trip code doesn't match. Check it with the group and try again."
       : Y.status === "notconfigured" ? (Y.message || "The server isn't configured yet. See the README: connect a Postgres database and set TRIP_CODE in Vercel, then redeploy.")
       : "Enter the shared trip code (the TRIP_CODE set in Vercel). Everyone who uses the same code sees the same votes, notes and added activities, live.";
     dlg.innerHTML = `<form method="dialog"><h3>Share with the group</h3><p class="sub">${NZ.esc(intro)}</p>
@@ -121,9 +123,14 @@
     dlg.onclose = () => {
       if (dlg.returnValue === "save") {
         const v = (document.getElementById("sync-code") || {}).value || "";
-        if (!v.trim()) return;
+        if (!v.trim()) { if (then) then(); return; }
         code = v.trim(); try { localStorage.setItem(CODE_KEY, code); } catch (e) {}
-        setStatus("syncing"); pull(true).then(() => { if (Y.status === "synced") { push(); if (then) then(); } }); startPolling();
+        setStatus("syncing"); startPolling();
+        pull(true).then(() => {
+          if (Y.status === "badcode") return then && dialog(then);
+          if (Y.status === "synced") push();
+          if (then) then();   // even if the server is unreachable right now, carry on to picking a name
+        });
       } else if (dlg.returnValue === "forget") {
         code = ""; try { localStorage.removeItem(CODE_KEY); } catch (e) {} setStatus(online ? "needcode" : "local");
       } else if (then && !code) then();
